@@ -1,0 +1,7 @@
+.vscode
+tmp
+.air.toml
+
+*.exe
+*.exe~
+*.dll
