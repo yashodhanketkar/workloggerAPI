@@ -10,18 +10,17 @@ import (
 	_ "github.com/lib/pq"
 )
 
-const (
-	host     = "localhost"
-	port     = 5432
-	user     = "postgres"
-	password = "admin"
-	dbname   = "worklogger"
-)
-
 var DB *sql.DB
 
 func InitDB() {
-	connStr := fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=disable", host, port, user, password, dbname)
+	connStr := fmt.Sprintf(
+		"host=%s port=%d user=%s password=%s dbname=%s sslmode=disable",
+		host,
+		port,
+		user,
+		password,
+		dbname,
+	)
 	var err error
 
 	if DB, err = sql.Open("postgres", connStr); err != nil {
@@ -32,9 +31,9 @@ func InitDB() {
 		log.Fatal(err)
 	}
 
-	createDB("users.sql")
-	createDB("projects.sql")
-	createDB("tasks.sql")
+	runSQL("users.sql")
+	runSQL("projects.sql")
+	runSQL("tasks.sql")
 
 	fmt.Println("Connected to the database")
 }
@@ -44,7 +43,7 @@ func CloseDB() {
 	fmt.Println("Connection closed")
 }
 
-func createDB(fileName string) {
+func runSQL(fileName string) {
 	schemaTasks, err := os.ReadFile(filepath.Join("db", "init", fileName))
 	if err != nil {
 		log.Fatal(err)
