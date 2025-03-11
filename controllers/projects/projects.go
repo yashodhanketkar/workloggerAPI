@@ -2,26 +2,29 @@ package projects
 
 import (
 	"log"
-	"time"
 	"worklogger/db"
 )
 
 type Project struct {
-	Id        int       `json:"id"`
-	Name      string    `json:"name"`
-	URL       string    `json:"url"`
-	CreatedAt time.Time `json:"created"`
-	UpdatedAt time.Time `json:"updated"`
+	Id        int    `json:"id"`
+	Name      string `json:"name"`
+	URL       string `json:"url"`
+	CreatedAt string `json:"created_at"`
+	UpdatedAt string `json:"updated_at"`
 }
 
 func Create(project Project) error {
-	_, err := db.DB.Exec("INSERT INTO projects(name, url) VALUES($1,$2)", project.Name, project.URL)
+	db := db.ConnectDB()
+	defer db.Close()
+	_, err := db.Exec("INSERT INTO projects(name, url) VALUES($1,$2)", project.Name, project.URL)
 	return err
 }
 
 func Get(id int) (Project, error) {
+	db := db.ConnectDB()
+	defer db.Close()
 	var project Project
-	row := db.DB.QueryRow("SELECT * FROM projects WHERE id = $1", id)
+	row := db.QueryRow("SELECT * FROM projects WHERE id = $1", id)
 	err := row.Scan(
 		&project.Id,
 		&project.Name,
@@ -33,7 +36,9 @@ func Get(id int) (Project, error) {
 }
 
 func ListAll() ([]Project, error) {
-	rows, err := db.DB.Query("SELECT * FROM projectS")
+	db := db.ConnectDB()
+	defer db.Close()
+	rows, err := db.Query("SELECT * FROM projectS")
 	if err != nil {
 		log.Println("Error querying projects", err)
 	}
@@ -62,7 +67,9 @@ func ListAll() ([]Project, error) {
 }
 
 func Update(id int, project Project) error {
-	_, err := db.DB.Exec(
+	db := db.ConnectDB()
+	defer db.Close()
+	_, err := db.Exec(
 		"update projects set name = $1, url = $2 where id = $3",
 		project.Name, project.URL, id,
 	)
@@ -70,6 +77,8 @@ func Update(id int, project Project) error {
 }
 
 func Delete(id int) error {
-	_, err := db.DB.Exec("DELETE FROM projects WHERE id = $1", id)
+	db := db.ConnectDB()
+	defer db.Close()
+	_, err := db.Exec("DELETE FROM projects WHERE id = $1", id)
 	return err
 }

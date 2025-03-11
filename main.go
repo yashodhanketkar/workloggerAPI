@@ -14,7 +14,6 @@ import (
 func main() {
 	// db setup
 	db.InitDB()
-	defer db.CloseDB()
 
 	// router setup
 	router := gin.New()
