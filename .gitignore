@@ -2,6 +2,7 @@
 tmp
 .air.toml
 
+*.db
 *.exe
 *.exe~
 *.dll

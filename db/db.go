@@ -2,54 +2,43 @@ package db
 
 import (
 	"database/sql"
-	"fmt"
 	"log"
 	"os"
 	"path/filepath"
 
-	_ "github.com/lib/pq"
+	_ "github.com/mattn/go-sqlite3"
 )
 
 var DB *sql.DB
 
+func ConnectDB() *sql.DB {
+	db, err := sql.Open("sqlite3", "records.db")
+	if err != nil {
+		log.Fatal(err)
+	}
+	return db
+}
+
 func InitDB() {
-	connStr := fmt.Sprintf(
-		"host=%s port=%d user=%s password=%s dbname=%s sslmode=disable",
-		host,
-		port,
-		user,
-		password,
-		dbname,
-	)
 	var err error
-
-	if DB, err = sql.Open("postgres", connStr); err != nil {
+	if DB, err = sql.Open("sqlite3", "records.db"); err != nil {
 		log.Fatal(err)
 	}
-
-	if err = DB.Ping(); err != nil {
-		log.Fatal(err)
-	}
-
-	runSQL("users.sql")
-	runSQL("projects.sql")
-	runSQL("tasks.sql")
-
-	fmt.Println("Connected to the database")
+	defer DB.Close()
+	createTables("projects.sql")
+	createTables("tasks.sql")
+	createTables("users.sql")
 }
 
-func CloseDB() {
-	DB.Close()
-	fmt.Println("Connection closed")
-}
-
-func runSQL(fileName string) {
-	schemaTasks, err := os.ReadFile(filepath.Join("db", "init", fileName))
+func createTables(filename string) {
+	path := filepath.Join("db", "init", filename)
+	schemeTasks, err := os.ReadFile(path)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	if _, err = DB.Exec(string(schemaTasks)); err != nil {
+	_, err = DB.Exec(string(schemeTasks))
+	if err != nil {
 		log.Fatal(err)
 	}
 }
